@@ -50,8 +50,6 @@ class producto(models.Model):
 	costo = models.FloatField()
 	cantidad = models.FloatField()
 	imagen = models.ImageField(upload_to='productos')
-	imagen1 = models.ImageField(upload_to='productos', default="")
-	imagen2 = models.ImageField(upload_to='productos', default="")
 	variedad = models.ForeignKey(variedad, db_column='variedad_id')
 	cat_producto = models.ForeignKey(cat_producto)
 	def __unicode__(self):
@@ -79,10 +77,11 @@ class servicio(models.Model):
 class carrito(models.Model):
 	codigo = models.CharField(max_length=20)
 	fecha = models.DateField(auto_now=False, auto_now_add=True)
-	cantidad = models.IntegerField(max_length=20)
+	cantidad = models.IntegerField()
 	usuario = models.ForeignKey(User)
 	producto = models.ForeignKey(producto, db_column='product_id', null=True, blank=True)
 	servicio = models.ForeignKey(servicio, db_column='servicio_id',null=True, blank=True)
+        total = models.FloatField()
 	def __unicode__(self):
 		return "%s %s"%(self.codigo,self.producto)	
 
@@ -95,10 +94,11 @@ class cotizacion(models.Model):
 
 	
 class cotizacion_detalle(models.Model): 
-	cantidad = models.FloatField()
+	cantidad = models.IntegerField()
 	valor_unitario= models.FloatField()
 	producto = models.ForeignKey(producto, db_column='product_id', null=True, blank=True)
 	servicio = models.ForeignKey(servicio, db_column='servicio_id',null=True, blank=True)
+        total =  models.FloatField()
 	cotizacion = models.ForeignKey(cotizacion,db_column='cotizacion_id')
 
 
@@ -114,8 +114,9 @@ class cat_foro(models.Model):
 	
 class foro(models.Model): 
 	fecha = models.DateField(auto_now=False, auto_now_add=True)
-	tema = models.CharField(max_length=20)
-	comentario = models.CharField(max_length=200)
+	tema = models.CharField(max_length=30)
+        coment_small = models.CharField(max_length=250, null=True, blank=True)
+	ccomentario = models.CharField(max_length=5000)
 	usuario = models.ForeignKey(User)
 	cat_foro = models.ForeignKey(cat_foro, db_column='cat_foro_id')
 	def __unicode__(self):
@@ -123,12 +124,14 @@ class foro(models.Model):
 
 	
 class comentario(models.Model):
-	tema = models.CharField(max_length=10)
+	tema = models.CharField(max_length=20)
 	fecha = models.DateTimeField(auto_now=False, auto_now_add=True)
 	descripcion = models.CharField(max_length=1000)
 	cproducto = models.ForeignKey(producto, null=True, blank=True)
         cservicio = models.ForeignKey(servicio, null=True,blank=True)
+        cforo = models.ForeignKey(foro, null=True,blank=True)
 	cusuario = models.ForeignKey(User)
+        responder = models.ForeignKey('self', null=True, blank=True)
 	def __unicode__(self):
 		return "%s"%(self.tema)	
 
@@ -141,12 +144,13 @@ class galeria(models.Model):
 class menu(models.Model):
 	nombre = models.CharField(max_length=10)
 	url = models.CharField(max_length=30)
-	padre = models.ForeignKey('self', null=True, blank=True)
+	padre = models.ForeignKey('self', null=True, blank=True, related_name='children')
         acceso = models.ForeignKey(Group, null=True, blank=True, default="")
 	nivel = models.SmallIntegerField(default=1)
+        orden = models.SmallIntegerField(default=1)
         
 	def __unicode__(self):
-		return str(self.nombre)
+		return "%s orden x%s"%(str(self.nombre),str(self.orden))
 
 class elmolino(models.Model):
 	historia= models.CharField(max_length=5000)
